@@ -62,7 +62,7 @@ export const createEventSource = (
     console.error('SSE Error:', event);
 
     const apiError: APIError = {
-      message: event.message || 'Connection error occurred',
+      message: ('message' in event ? event.message : undefined) || 'Connection error occurred',
       code: 'CONNECTION_ERROR',
     };
 

@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { EventSource } from 'react-native-sse';
+import EventSource from 'react-native-sse';
 import { useChatStore } from '../store/chatStore';
 import {
   buildStreamURL,
