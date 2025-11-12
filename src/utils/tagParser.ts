@@ -36,17 +36,15 @@ export const extractCompleteTags = (text: string): TagMatch[] => {
     const endIndex = match.index + match[0].length;
     const fullMatch = match[0];
 
-    // Only include known tag names
-    if (isValidTagName(tagName)) {
-      matches.push({
-        tagName,
-        content,
-        startIndex,
-        endIndex,
-        isComplete: true,
-        fullMatch,
-      });
-    }
+    // Accept any tag name (generic parsing)
+    matches.push({
+      tagName,
+      content,
+      startIndex,
+      endIndex,
+      isComplete: true,
+      fullMatch,
+    });
   }
 
   return matches;
@@ -62,23 +60,22 @@ export const detectIncompleteTag = (text: string): TagMatch | null => {
   if (match) {
     const tagName = match[1].toLowerCase();
 
-    if (isValidTagName(tagName)) {
-      // Find where the incomplete tag starts
-      const startIndex = match.index || 0;
-      // Extract content after opening tag
-      const openingTagEnd = startIndex + `<${match[1]}>`.length;
-      const content = text.substring(openingTagEnd);
-      const fullMatch = match[0];
+    // Accept any tag name (generic parsing)
+    // Find where the incomplete tag starts
+    const startIndex = match.index || 0;
+    // Extract content after opening tag
+    const openingTagEnd = startIndex + `<${match[1]}>`.length;
+    const content = text.substring(openingTagEnd);
+    const fullMatch = match[0];
 
-      return {
-        tagName,
-        content,
-        startIndex,
-        endIndex: text.length,
-        isComplete: false,
-        fullMatch,
-      };
-    }
+    return {
+      tagName,
+      content,
+      startIndex,
+      endIndex: text.length,
+      isComplete: false,
+      fullMatch,
+    };
   }
 
   return null;
@@ -226,7 +223,7 @@ export const parseBuffer = (buffer: string): ParserState => {
     tagName: tag.tagName,
     content: tag.content,
     isComplete: true,
-    isCollapsed: false,
+    isCollapsed: true, // Start collapsed by default
   }));
 
   // Remove processed tags from buffer

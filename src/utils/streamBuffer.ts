@@ -55,7 +55,7 @@ export class StreamBuffer {
           tagName: item.tagName!,
           content: item.content,
           isComplete: true,
-          isCollapsed: false,
+          isCollapsed: true, // Start collapsed by default
         };
         return {
           type: 'section',
@@ -118,7 +118,7 @@ export class StreamBuffer {
           tagName: item.tagName!,
           content: item.content,
           isComplete: true,
-          isCollapsed: false,
+          isCollapsed: true, // Start collapsed by default
         };
         return {
           type: 'section',

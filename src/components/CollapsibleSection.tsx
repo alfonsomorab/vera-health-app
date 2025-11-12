@@ -15,43 +15,44 @@ interface CollapsibleSectionProps {
   children: React.ReactNode;
 }
 
-export const CollapsibleSection = React.memo<CollapsibleSectionProps>(
-  ({ section, onToggle, children }) => {
-    const title = getTagTitle(section.tagName);
+export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
+  section,
+  onToggle,
+  children,
+}) => {
+  const title = getTagTitle(section.tagName);
 
-    return (
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.header}
-          onPress={() => onToggle(section.id)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.icon}>
-            {section.isCollapsed ? '▶' : '▼'}
-          </Text>
-        </TouchableOpacity>
+  // Ensure isCollapsed is always a boolean (defaults to true = collapsed)
+  const isCollapsed = section.isCollapsed ?? true;
 
-        <Collapsible collapsed={section.isCollapsed} duration={300}>
-          <View style={styles.content}>
-            {children}
-          </View>
-        </Collapsible>
-      </View>
-    );
-  },
-  (prevProps, nextProps) => {
-    // Only re-render if section properties that affect display have changed
-    return (
-      prevProps.section.id === nextProps.section.id &&
-      prevProps.section.isCollapsed === nextProps.section.isCollapsed &&
-      prevProps.section.content === nextProps.section.content &&
-      prevProps.section.isComplete === nextProps.section.isComplete
-    );
-  }
-);
+  const handleToggle = React.useCallback(() => {
+    console.log('Toggle clicked for section:', section.id, 'isCollapsed before:', isCollapsed);
+    onToggle(section.id);
+  }, [onToggle, section.id, isCollapsed]);
 
-CollapsibleSection.displayName = 'CollapsibleSection';
+  console.log('CollapsibleSection render:', section.id, 'isCollapsed:', isCollapsed);
+
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.header}
+        onPress={handleToggle}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.icon}>
+          {isCollapsed ? '▶' : '▼'}
+        </Text>
+      </TouchableOpacity>
+
+      <Collapsible collapsed={isCollapsed} duration={300}>
+        <View style={styles.content}>
+          {children}
+        </View>
+      </Collapsible>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

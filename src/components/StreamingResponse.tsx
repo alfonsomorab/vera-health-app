@@ -3,7 +3,7 @@
  * Displays the user's question and streaming response with collapsible sections
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useChatStore, useContentItems, useCurrentQuestion, useError } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
@@ -16,7 +16,12 @@ export const StreamingResponse: React.FC = () => {
   const error = useError();
   const rawContent = useChatStore((state) => state.rawContent);
   const streamingState = useChatStore((state) => state.streamingState);
-  const toggleCollapse = useChatStore((state) => state.toggleCollapse);
+
+  // Get toggle function and wrap in useCallback for stable reference
+  const toggleCollapseFromStore = useChatStore((state) => state.toggleCollapse);
+  const toggleCollapse = useCallback((id: string) => {
+    toggleCollapseFromStore(id);
+  }, [toggleCollapseFromStore]);
 
   // Don't show anything if no question has been asked
   if (!currentQuestion) {
