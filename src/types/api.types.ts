@@ -4,22 +4,26 @@
  */
 
 // SSE Event from streaming API
-export interface SSEEvent {
-  type: string;
+// Actual format: {"type":"STREAM","content":"text chunk"}
+export interface SSEStreamChunk {
+  type: 'STREAM';
+  content: string;
+}
+
+// Other SSE event types (NodeChunk for metadata)
+export interface SSENodeChunk {
+  type: 'NodeChunk';
   content: {
     nodeName: string;
-    content: string;
+    content: any;
   };
 }
 
-// Parsed SSE data chunk
-export interface SSEDataChunk {
-  type: 'NodeChunk';
-  content: {
-    nodeName: 'STREAM';
-    content: string;
-  };
-}
+// Union type for all possible SSE events
+export type SSEEvent = SSEStreamChunk | SSENodeChunk;
+
+// Legacy type alias for backward compatibility
+export type SSEDataChunk = SSEStreamChunk;
 
 // API Error
 export interface APIError {

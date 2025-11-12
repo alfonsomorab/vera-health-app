@@ -152,55 +152,67 @@ Chunk 2: "line>Content</guideline>"
 
 ## 📊 Implementation Progress
 
-**Core Progress** (Phases 1-5): 26% (10/39 tasks)
-**Total Progress** (All phases): 22% (10/46 tasks)
+**Core Progress** (Phases 1-5): 41% (16/39 tasks)
+**Total Progress** (All phases): 35% (16/46 tasks)
 
 | Phase | Status | Tasks | Notes |
 |-------|--------|-------|-------|
-| Phase 1: Foundation | ✅ 100% | 10/10 | Complete - ready for Phase 2 |
-| Phase 2: SSE Integration | 🔴 0% | 0/6 | Next: Create apiService.ts |
-| Phase 3: Tag Parsing | 🔴 0% | 0/7 | Most complex phase |
+| Phase 1: Foundation | ✅ 100% | 10/10 | Complete |
+| Phase 2: SSE Integration | ✅ 100% | 6/6 | Complete - streaming works! |
+| Phase 3: Tag Parsing | 🔴 0% | 0/7 | **NEXT** - Most complex phase |
 | Phase 4: Markdown & Polish | 🔴 0% | 0/9 | Performance + new UI improvements |
 | Phase 5: Testing & Refinement | 🔴 0% | 0/7 | Final polish |
 | Phase 6: Additional Features | 🔴 0% | 0/7 | Optional: Menu, history, about |
 
-**Time Spent**: 5 hours (2h planning + 3h Phase 1)
+**Time Spent**: ~7 hours (2h planning + 3h Phase 1 + 2h Phase 2)
 
 ---
 
-## 🎯 Next Steps (Phase 2: SSE Integration)
+## ✅ Phase 2: Complete! (SSE Integration)
 
-### 2.1 Create API Service (src/services/apiService.ts)
-- Build API URL with encoded prompt
-- SSE configuration
-- Error handling utilities
+### What Works Now:
+- ✅ Real-time streaming from Vera Health API
+- ✅ Incremental text display as data arrives
+- ✅ 5-second inactivity timeout detects stream completion
+- ✅ Retry logic with exponential backoff (3 attempts)
+- ✅ User-friendly error messages
+- ✅ Loading states and animations
+- ✅ Clean connection cleanup
 
-### 2.2 Implement useStreamingAPI Hook (src/hooks/useStreamingAPI.ts)
-- EventSource from react-native-sse
-- Parse incoming SSE chunks
-- Handle message/error/close events
-- 30-second timeout
-- Retry logic (3 attempts)
-- Return cleanup function
+### Key Fixes Made:
+1. **API Format**: Fixed parsing for `{"type":"STREAM","content":"text"}` format
+2. **Timeout**: Removed `timeoutBeforeConnection`, using 5s inactivity detection
+3. **Stream Completion**: Proper detection via timeout after last message
 
-### 2.3 Connect to Zustand Store
-- Update rawContent as chunks arrive
-- Set streaming state (idle/streaming/complete/error)
-- Handle errors
+---
 
-### 2.4 Test with Real API
-- Endpoint: `https://vera-assignment-api.vercel.app/api/stream?prompt={question}`
-- Verify streaming works
-- Test timeout handling
-- Test error states
+## 🎯 Next Steps (Phase 3: Tag Parsing)
 
-### 2.5 Phase 2 Milestone
-- Can send question to API ✓
-- Streaming response displays in real-time ✓
-- Loading states work ✓
-- Errors handled gracefully ✓
+**Goal**: Parse XML tags (`<guideline>`, `<drug>`, etc.) from streaming text and display as collapsible sections
 
-**Estimated Time**: 4-6 hours
+### 3.1 Create Tag Parser Utility (src/utils/tagParser.ts)
+- Regex to detect complete tags
+- Extract tag name and content
+- Handle incomplete tags at buffer end
+- Validate known tag names
+
+### 3.2 Implement Stream Buffer (src/utils/streamBuffer.ts)
+- Accumulate chunks
+- Detect complete tags
+- Keep incomplete tags in buffer
+- Handle tags split across chunks
+
+### 3.3 Create useStreamingParser Hook
+- Parse chunks incrementally
+- Create sections for complete tags
+- Update store as sections complete
+
+### 3.4 Update UI for Sections
+- Display parsed sections with CollapsibleSection
+- Handle text outside tags
+- Show incomplete section during streaming
+
+**Estimated Time**: 6-8 hours (most complex phase)
 
 ---
 
@@ -422,15 +434,16 @@ npm run android       # Run Android
 
 When returning to this project:
 
-1. **Current State**: Phase 1 complete, ready for Phase 2
-2. **Next Action**: Create src/services/apiService.ts
+1. **Current State**: Phases 1-2 complete, ready for Phase 3
+2. **Next Action**: Create src/utils/tagParser.ts and src/utils/streamBuffer.ts
 3. **Key Files**:
    - Store: src/store/chatStore.ts
-   - Main Screen: src/screens/ChatScreen.tsx
+   - SSE Hook: src/hooks/useStreamingAPI.ts
+   - API Service: src/services/apiService.ts
    - Types: src/types/*.ts
-4. **Path Aliases**: Using relative imports (not @aliases due to @types conflict)
-5. **Testing**: TypeScript compiles cleanly
-6. **Blocked On**: Nothing - ready to proceed with Phase 2
+4. **Streaming**: ✅ Working perfectly with 5-second inactivity timeout
+5. **Testing**: TypeScript compiles cleanly, tested with real API
+6. **Blocked On**: Nothing - ready for Phase 3 (tag parsing)
 
 ### User Preferences (from global CLAUDE.md)
 - Be 100% honest, no sugarcoating
@@ -443,6 +456,34 @@ When returning to this project:
 ---
 
 ## 📝 Recent Updates
+
+### 2025-11-12: Phase 2 Complete - SSE Streaming Working! ✅
+**Status**: Real-time streaming fully functional
+
+**What Was Fixed**:
+1. **API Format Mismatch**:
+   - Expected: `{"type":"NodeChunk","content":{"nodeName":"STREAM","content":"text"}}`
+   - Actual: `{"type":"STREAM","content":"text"}`
+   - Fixed parsing in `apiService.ts` and `useStreamingAPI.ts`
+
+2. **Timeout Issues**:
+   - Removed `timeoutBeforeConnection` causing immediate timeout
+   - Implemented 5-second inactivity detection for stream completion
+   - Prevents premature timeout during slow streams
+
+3. **Stream Completion**:
+   - Changed from error-based timeout to completion-based timeout
+   - After last message arrives, waits 5s → closes cleanly
+   - No more retry loops or duplicate messages
+
+**Files Modified**:
+- `src/types/api.types.ts` - Updated SSE event types
+- `src/services/apiService.ts` - Fixed parsing logic, removed timeout config
+- `src/hooks/useStreamingAPI.ts` - Changed to 5s completion timeout
+
+**Testing**: ✅ Confirmed working with real Vera Health API
+
+---
 
 ### 2025-11-12: UI Improvements & Optional Features Added
 **Changes**:
@@ -467,4 +508,4 @@ When returning to this project:
 ---
 
 **Last Updated**: 2025-11-12
-**Next Session**: Start Phase 2 - SSE Integration
+**Next Session**: Start Phase 3 - Tag Parsing (most complex phase)

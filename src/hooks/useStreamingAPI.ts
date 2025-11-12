@@ -45,7 +45,8 @@ export const useStreamingAPI = ({
    */
   const handleMessage = useCallback(
     (chunk: SSEDataChunk) => {
-      const content = chunk.content.content;
+      // With new API format: {"type":"STREAM","content":"text"}
+      const content = chunk.content;
 
       if (content) {
         // Append new content to raw content buffer
@@ -56,19 +57,37 @@ export const useStreamingAPI = ({
       }
 
       // Reset timeout on each message
+      // Use a shorter timeout (5 seconds) after receiving data
+      // If no data for 5 seconds, assume stream is complete
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);
       }
 
       timeoutIdRef.current = setTimeout(() => {
-        console.warn('Stream timeout - no data received');
-        handleError({
-          message: 'Stream timed out',
-          code: 'TIMEOUT_ERROR',
-        });
-      }, STREAM_TIMEOUT_MS);
+        console.log('Stream appears complete (no data for 5 seconds)');
+
+        // Clear timeout
+        if (timeoutIdRef.current) {
+          clearTimeout(timeoutIdRef.current);
+          timeoutIdRef.current = null;
+        }
+
+        // Close connection
+        closeEventSource(eventSourceRef.current);
+        eventSourceRef.current = null;
+
+        // Reset retry count
+        retryCountRef.current = 0;
+
+        // Update state
+        setStreamingState('complete');
+
+        if (onComplete) {
+          onComplete();
+        }
+      }, 5000); // 5 seconds after last message = stream complete
     },
-    [appendRawContent]
+    [appendRawContent, setStreamingState, onComplete]
   );
 
   /**

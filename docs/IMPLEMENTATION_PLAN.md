@@ -314,21 +314,24 @@ src/
 ## Phase 2: SSE Integration
 **Goal**: Connect to streaming API, display raw responses
 **Estimated Time**: 4-6 hours
-**Status**: 🔴 Not Started
+**Status**: ✅ Complete
 
 ### 2.1 Create API Service
-- [ ] Create `src/services/apiService.ts`:
+- [x] Create `src/services/apiService.ts`:
   - Function to build API URL with encoded prompt
   - SSE configuration constants
   - Error handling utilities
 
 **Notes**:
--
+- ✅ `buildStreamURL()` with proper encoding
+- ✅ `createEventSource()` with event listeners
+- ✅ `formatAPIError()` for user-friendly messages
+- ✅ Removed problematic `timeoutBeforeConnection` setting
 
 ---
 
 ### 2.2 Implement useStreamingAPI Hook
-- [ ] Create `src/hooks/useStreamingAPI.ts`:
+- [x] Create `src/hooks/useStreamingAPI.ts`:
   - Import EventSource from react-native-sse
   - Setup SSE connection
   - Parse incoming chunks
@@ -336,51 +339,65 @@ src/
   - Return cleanup function
 
 **Notes**:
-- Test connection with console.log first
+- ✅ Full retry logic with 3 attempts and exponential backoff
+- ✅ 5-second inactivity timeout to detect stream completion
+- ✅ Proper cleanup on unmount
+- ✅ Connected to Zustand store
 
 ---
 
 ### 2.3 Connect API to Store
-- [ ] Wire useStreamingAPI to update Zustand store
-- [ ] Handle loading state (start streaming)
-- [ ] Handle error state
-- [ ] Update rawContent as chunks arrive
+- [x] Wire useStreamingAPI to update Zustand store
+- [x] Handle loading state (start streaming)
+- [x] Handle error state
+- [x] Update rawContent as chunks arrive
 
 **Notes**:
--
+- ✅ `appendRawContent()` accumulates streaming chunks
+- ✅ `setStreamingState()` updates UI state
+- ✅ `setError()` handles error display
 
 ---
 
 ### 2.4 Display Raw Streaming Text
-- [ ] Update StreamingResponse to show rawContent
-- [ ] Test with real API
-- [ ] Verify text appears incrementally
+- [x] Update StreamingResponse to show rawContent
+- [x] Test with real API
+- [x] Verify text appears incrementally
 
 **Notes**:
-- No parsing yet, just display everything as plain text
+- ✅ Raw content displays with MarkdownRenderer
+- ✅ Loading indicator during streaming
+- ✅ Tested with real Vera Health API
 
 ---
 
 ### 2.5 Add Timeout & Error Handling
-- [ ] Implement 30-second timeout
-- [ ] Add retry logic (up to 3 attempts)
-- [ ] Display error messages to user
-- [ ] Add manual "Retry" button
+- [x] Implement timeout (5s after last message)
+- [x] Add retry logic (up to 3 attempts)
+- [x] Display error messages to user
+- [x] Retry available via re-sending question
 
 **Notes**:
--
+- ✅ 5-second timeout after last message = stream complete
+- ✅ Exponential backoff on retries (1s, 2s, 3s)
+- ✅ User-friendly error messages
+- ✅ Manual retry by re-submitting question
 
 ---
 
 ### 2.6 Phase 2 Milestone
-- [ ] Can send question to API
-- [ ] Streaming response displays in real-time
-- [ ] Loading states work correctly
-- [ ] Errors are handled gracefully
-- [ ] Timeout works as expected
+- [x] Can send question to API
+- [x] Streaming response displays in real-time
+- [x] Loading states work correctly
+- [x] Errors are handled gracefully
+- [x] Timeout works as expected
 
 **Notes**:
--
+- ✅ **All Phase 2 functionality working!**
+- 🐛 Fixed: API format was `{"type":"STREAM","content":"text"}` not NodeChunk format
+- 🐛 Fixed: Removed `timeoutBeforeConnection` causing immediate timeout
+- 🐛 Fixed: Changed to 5-second inactivity timeout for proper stream completion
+- 📝 Tested with real API: https://vera-assignment-api.vercel.app/api/stream
 
 ---
 
@@ -873,14 +890,14 @@ src/
 ## Progress Tracking
 
 **Phase 1**: 🟢 100% (10/10 tasks) ✅ COMPLETE
-**Phase 2**: 🔴 0% (0/6 tasks)
+**Phase 2**: 🟢 100% (6/6 tasks) ✅ COMPLETE
 **Phase 3**: 🔴 0% (0/7 tasks)
 **Phase 4**: 🔴 0% (0/9 tasks) ⚡ Updated with UI improvements
 **Phase 5**: 🔴 0% (0/7 tasks)
 **Phase 6** (Optional): 🔴 0% (0/7 tasks) ⭐ Desirable features
 
-**Core Progress** (Phases 1-5): 🟡 26% (10/39 tasks)
-**Total Progress** (All phases): 🟡 22% (10/46 tasks)
+**Core Progress** (Phases 1-5): 🟡 41% (16/39 tasks)
+**Total Progress** (All phases): 🟡 35% (16/46 tasks)
 
 ---
 

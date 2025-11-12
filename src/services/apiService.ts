@@ -24,28 +24,31 @@ export const createEventSource = (
   onError: (error: APIError) => void,
   onComplete: () => void
 ): EventSource => {
+  console.log('Creating EventSource for:', url);
+
   const eventSource = new EventSource(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'text/event-stream',
-    },
-    timeoutBeforeConnection: STREAM_TIMEOUT_MS,
+    // Don't set timeoutBeforeConnection - let the connection stay open
+    // We'll handle timeouts manually in the hook
   });
 
   // Handle incoming messages
   eventSource.addEventListener('message', (event) => {
+    console.log('Received SSE message');
     try {
       if (event.data) {
-        const parsed = JSON.parse(event.data) as SSEDataChunk;
+        const parsed = JSON.parse(event.data);
+        console.log('Parsed message type:', parsed.type);
 
-        // Validate the expected structure
-        if (
-          parsed.type === 'NodeChunk' &&
-          parsed.content &&
-          parsed.content.nodeName === 'STREAM' &&
-          typeof parsed.content.content === 'string'
-        ) {
-          onMessage(parsed);
+        // Handle STREAM type messages (actual content)
+        // Format: {"type":"STREAM","content":"text chunk"}
+        if (parsed.type === 'STREAM' && typeof parsed.content === 'string') {
+          console.log('Received STREAM chunk, length:', parsed.content.length);
+          onMessage(parsed as SSEDataChunk);
+        }
+
+        // Ignore other event types (NodeChunk, etc.) - these are metadata
+        if (parsed.type !== 'STREAM') {
+          console.log('Ignoring non-STREAM event:', parsed.type);
         }
       }
     } catch (error) {
@@ -71,12 +74,12 @@ export const createEventSource = (
 
   // Handle connection open
   eventSource.addEventListener('open', () => {
-    console.log('SSE connection opened');
+    console.log('✅ SSE connection opened successfully');
   });
 
   // Handle connection close
   eventSource.addEventListener('close', () => {
-    console.log('SSE connection closed');
+    console.log('🔴 SSE connection closed');
     onComplete();
   });
 
