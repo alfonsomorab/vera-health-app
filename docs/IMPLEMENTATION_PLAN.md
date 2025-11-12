@@ -15,6 +15,7 @@
 - [Phase 3: Tag Parsing](#phase-3-tag-parsing)
 - [Phase 4: Markdown & Polish](#phase-4-markdown--polish)
 - [Phase 5: Testing & Refinement](#phase-5-testing--refinement)
+- [Phase 6: Additional Features (Optional)](#phase-6-additional-features-optional)
 - [Known Issues & Solutions](#known-issues--solutions)
 - [Questions & Decisions](#questions--decisions)
 
@@ -546,10 +547,22 @@ src/
 - [ ] Consistent spacing and typography
 - [ ] Color scheme (likely minimal/medical)
 - [ ] Touch feedback on interactive elements
+- [ ] **Ensure text input stays at bottom even on initial load**
+  - Use KeyboardAvoidingView wrapper
+  - Proper safe area insets for notch devices
+  - Input remains accessible at all times
+- [ ] **Create EmptyState component for initial view**
+  - Display centered welcome text when no conversation exists
+  - Show when `currentQuestion === ''` and no sections
+  - Create `src/components/EmptyState.tsx`
+  - Friendly invitation to ask first question
+  - Hide once user submits their first question
 - [ ] Keyboard handling (dismiss on scroll)
 
 **Notes**:
 - Reference: screenshot on page 4 of PDF
+- Empty state improves UX for first-time users
+- Input at bottom provides consistent interaction pattern
 
 ---
 
@@ -659,6 +672,154 @@ src/
 
 ---
 
+## Phase 6: Additional Features (Optional)
+**Goal**: Add conversation history, menu system, and about section
+**Estimated Time**: 6-8 hours
+**Status**: 🔴 Not Started
+**Priority**: Desirable (implement if time permits after core features)
+
+### 6.1 Setup Local Storage for Conversations
+- [ ] Install AsyncStorage:
+  ```bash
+  npx expo install @react-native-async-storage/async-storage
+  ```
+- [ ] Create `src/services/storageService.ts`:
+  - saveConversation(id, question, sections, timestamp)
+  - loadConversations()
+  - deleteConversation(id)
+  - clearAllConversations()
+- [ ] Add conversation history to Zustand store:
+  - conversationHistory: Conversation[]
+  - loadHistory()
+  - saveCurrentConversation()
+  - loadConversation(id)
+
+**Notes**:
+- Store conversations as JSON with unique IDs
+- Include timestamp for sorting
+- Consider max storage limit (e.g., last 50 conversations)
+
+---
+
+### 6.2 Create Menu Components
+- [ ] Create `src/components/MenuDrawer.tsx`:
+  - Slide-in drawer from left (or use React Navigation drawer)
+  - Menu header with app title
+  - List of conversation history items
+  - Touch handlers for selecting conversations
+  - Smooth animations
+- [ ] Create `src/components/MenuButton.tsx`:
+  - Hamburger menu icon for header
+  - Toggle drawer open/close
+- [ ] Create `src/components/ConversationHistoryItem.tsx`:
+  - Display question preview (first 50 chars)
+  - Timestamp formatted (e.g., "2 hours ago", "Nov 10")
+  - Touch to load conversation
+  - Swipe-to-delete functionality (optional)
+
+**Notes**:
+- Consider using react-navigation drawer for smoother UX
+- Alternative: Modal-based menu if drawer is complex
+
+---
+
+### 6.3 Implement Menu Actions
+- [ ] **New Conversation**:
+  - Menu option: "New Conversation"
+  - Confirmation dialog: "Start new conversation? Current conversation will be saved."
+  - Action: Save current to history, reset store
+- [ ] **Load Conversation**:
+  - Tap history item to load
+  - Restore question and sections from storage
+  - Close menu after loading
+- [ ] **Delete Conversation** (optional):
+  - Swipe-to-delete or delete button
+  - Confirmation: "Delete this conversation?"
+  - Remove from storage and store
+
+**Notes**:
+- Auto-save current conversation before starting new one
+- Handle edge case: loading conversation while streaming
+
+---
+
+### 6.4 Create About Screen
+- [ ] Create `src/screens/AboutScreen.tsx`:
+  - App name and logo (if available)
+  - Version number (from package.json)
+  - Author name: "Alfonso [Last Name]"
+  - Brief description
+  - "Made for Vera Health Technical Assignment"
+  - Close button
+- [ ] Add navigation to About:
+  - Menu option: "About"
+  - Opens as modal or navigates to screen
+- [ ] Style with consistent theme
+
+**Notes**:
+- Keep it simple and professional
+- Read version from `require('../../package.json').version`
+
+---
+
+### 6.5 Update Navigation Structure
+- [ ] Option A: Install React Navigation (recommended):
+  ```bash
+  npm install @react-navigation/native @react-navigation/drawer
+  npx expo install react-native-gesture-handler react-native-reanimated
+  ```
+  - Setup drawer navigator
+  - ChatScreen as main screen
+  - AboutScreen as secondary screen
+
+- [ ] Option B: Custom drawer (lighter weight):
+  - Use Animated API for slide-in drawer
+  - Modal for About screen
+  - No external navigation library
+
+**Decision**:
+- [ ] Choose Option A or B based on complexity needs
+
+**Notes**:
+- Option A: Better UX, more dependencies
+- Option B: Lighter, more manual work
+
+---
+
+### 6.6 Polish Menu UI
+- [ ] Consistent styling with main app
+- [ ] Smooth animations (drawer slide, modal fade)
+- [ ] Proper safe area handling
+- [ ] Touch feedback on all interactive elements
+- [ ] Loading states for history (if slow)
+- [ ] Empty state for history: "No conversations yet"
+
+**Notes**:
+-
+
+---
+
+### 6.7 Phase 6 Milestone
+- [ ] Menu drawer opens/closes smoothly
+- [ ] Conversation history displays correctly
+- [ ] Can load previous conversations
+- [ ] "New Conversation" saves current and resets
+- [ ] About screen shows author and version
+- [ ] All menu features work on both platforms
+- [ ] No performance degradation
+
+**Test Cases**:
+- [ ] Save and load 10+ conversations
+- [ ] New conversation with unsaved changes
+- [ ] Delete conversation from history
+- [ ] About screen displays correctly
+- [ ] Menu works during active streaming (should block or queue)
+
+**Notes**:
+- This phase is optional - only implement if core features (Phases 1-5) are complete and stable
+
+---
+
 ## Known Issues & Solutions
 
 ### Issue 1: [Title]
@@ -714,10 +875,12 @@ src/
 **Phase 1**: 🟢 100% (10/10 tasks) ✅ COMPLETE
 **Phase 2**: 🔴 0% (0/6 tasks)
 **Phase 3**: 🔴 0% (0/7 tasks)
-**Phase 4**: 🔴 0% (0/7 tasks)
+**Phase 4**: 🔴 0% (0/9 tasks) ⚡ Updated with UI improvements
 **Phase 5**: 🔴 0% (0/7 tasks)
+**Phase 6** (Optional): 🔴 0% (0/7 tasks) ⭐ Desirable features
 
-**Overall Progress**: 🟡 27% (10/37 tasks)
+**Core Progress** (Phases 1-5): 🟡 26% (10/39 tasks)
+**Total Progress** (All phases): 🟡 22% (10/46 tasks)
 
 ---
 

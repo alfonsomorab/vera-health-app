@@ -152,15 +152,17 @@ Chunk 2: "line>Content</guideline>"
 
 ## 📊 Implementation Progress
 
-**Overall**: 27% (10/37 tasks)
+**Core Progress** (Phases 1-5): 26% (10/39 tasks)
+**Total Progress** (All phases): 22% (10/46 tasks)
 
 | Phase | Status | Tasks | Notes |
 |-------|--------|-------|-------|
 | Phase 1: Foundation | ✅ 100% | 10/10 | Complete - ready for Phase 2 |
 | Phase 2: SSE Integration | 🔴 0% | 0/6 | Next: Create apiService.ts |
 | Phase 3: Tag Parsing | 🔴 0% | 0/7 | Most complex phase |
-| Phase 4: Markdown & Polish | 🔴 0% | 0/7 | Performance optimization |
+| Phase 4: Markdown & Polish | 🔴 0% | 0/9 | Performance + new UI improvements |
 | Phase 5: Testing & Refinement | 🔴 0% | 0/7 | Final polish |
+| Phase 6: Additional Features | 🔴 0% | 0/7 | Optional: Menu, history, about |
 
 **Time Spent**: 5 hours (2h planning + 3h Phase 1)
 
@@ -300,6 +302,36 @@ const TAG_NAMES = ['guideline', 'drug', 'recommendation', 'warning', 'note'];
 - Collapsible sections for answer
 - Collapse/expand with arrow icon
 
+### Core UI Improvements (Phase 4.6)
+1. **Empty State (Required)**:
+   - Display centered welcome text when app first loads
+   - Invites user to ask their first question
+   - Disappears after first question submitted
+   - Component: `src/components/EmptyState.tsx`
+
+2. **Input Always at Bottom (Required)**:
+   - Text input remains at bottom even on initial load
+   - Use KeyboardAvoidingView wrapper
+   - Proper safe area handling for notch devices
+   - Consistent interaction pattern
+
+### Desirable Features (Phase 6 - Optional)
+3. **Conversation History Menu**:
+   - Slide-in drawer from left
+   - List of previous conversations with timestamps
+   - Load/delete conversations
+   - Requires AsyncStorage for persistence
+
+4. **New Conversation Option**:
+   - Menu option with confirmation dialog
+   - Saves current conversation before resetting
+   - Clear starting point for new questions
+
+5. **About Section**:
+   - Author name and app version
+   - "Made for Vera Health Technical Assignment"
+   - Accessible from menu
+
 ### Color Scheme (Current)
 - Primary: #007AFF (iOS blue)
 - Background: #fff
@@ -311,6 +343,7 @@ const TAG_NAMES = ['guideline', 'drug', 'recommendation', 'warning', 'note'];
 ### Animations
 - Loading indicator: Pulsing opacity (800ms cycle)
 - Collapsible sections: 300ms duration
+- Menu drawer: Smooth slide-in (Phase 6)
 - Smooth, no jank during streaming
 
 ---
@@ -407,5 +440,31 @@ When returning to this project:
 
 ---
 
-**Last Updated**: 2025-11-10
+---
+
+## 📝 Recent Updates
+
+### 2025-11-12: UI Improvements & Optional Features Added
+**Changes**:
+- **Phase 4.6 Enhanced**: Added empty state component and input-at-bottom requirements
+- **Phase 6 Created**: New optional phase for conversation history, menu, and about section
+- **Progress Updated**: Now tracking 46 total tasks (39 core + 7 optional)
+
+**New Components Planned**:
+- `src/components/EmptyState.tsx` (Phase 4.6)
+- `src/components/MenuDrawer.tsx` (Phase 6.2)
+- `src/components/MenuButton.tsx` (Phase 6.2)
+- `src/components/ConversationHistoryItem.tsx` (Phase 6.2)
+- `src/screens/AboutScreen.tsx` (Phase 6.4)
+- `src/services/storageService.ts` (Phase 6.1)
+
+**New Dependencies** (Phase 6 only):
+- `@react-native-async-storage/async-storage` - Local conversation storage
+- `@react-navigation/native` + `@react-navigation/drawer` (optional) - Navigation
+
+**Priority**: Focus on Phases 1-5 first (core assignment requirements). Phase 6 only if time permits.
+
+---
+
+**Last Updated**: 2025-11-12
 **Next Session**: Start Phase 2 - SSE Integration
