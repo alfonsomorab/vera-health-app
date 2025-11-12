@@ -18,7 +18,7 @@ import { useStreamingAPI } from '../hooks';
 
 export const ChatScreen: React.FC = () => {
   const setQuestion = useChatStore((state) => state.setQuestion);
-  const clearSections = useChatStore((state) => state.clearSections);
+  const clearContent = useChatStore((state) => state.clearContent);
   const setStreamingState = useChatStore((state) => state.setStreamingState);
 
   const [streamingEnabled, setStreamingEnabled] = useState(false);
@@ -43,8 +43,8 @@ export const ChatScreen: React.FC = () => {
   });
 
   const handleSend = (question: string) => {
-    // Clear previous sections and errors
-    clearSections();
+    // Clear previous content and errors
+    clearContent();
     setStreamingState('idle');
 
     // Set new question (this will be picked up by useStreamingAPI)

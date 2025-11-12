@@ -5,14 +5,14 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useChatStore, useSections, useCurrentQuestion, useError } from '../store/chatStore';
+import { useChatStore, useContentItems, useCurrentQuestion, useError } from '../store/chatStore';
 import { LoadingIndicator } from './LoadingIndicator';
 import { CollapsibleSection } from './CollapsibleSection';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
 export const StreamingResponse: React.FC = () => {
   const currentQuestion = useCurrentQuestion();
-  const sections = useSections();
+  const contentItems = useContentItems();
   const error = useError();
   const rawContent = useChatStore((state) => state.rawContent);
   const streamingState = useChatStore((state) => state.streamingState);
@@ -24,10 +24,10 @@ export const StreamingResponse: React.FC = () => {
   }
 
   // Show loading only when streaming but no content yet
-  const showLoading = streamingState === 'streaming' && !rawContent && sections.length === 0;
+  const showLoading = streamingState === 'streaming' && !rawContent && contentItems.length === 0;
 
-  // Show raw content when streaming (Phase 2 - before tag parsing in Phase 3)
-  const showRawContent = rawContent && sections.length === 0;
+  // Show raw content only if we haven't parsed any content items yet (Phase 2 fallback)
+  const showRawContent = rawContent && contentItems.length === 0;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -66,26 +66,41 @@ export const StreamingResponse: React.FC = () => {
         </View>
       )}
 
-      {/* Parsed Sections (Phase 3+) */}
-      {sections.length > 0 && (
+      {/* Ordered Content Items (Phase 3+) */}
+      {contentItems.length > 0 && (
         <View style={styles.answerContainer}>
           <Text style={styles.answerLabel}>Answer:</Text>
 
-          {/* Render all sections */}
-          {sections.map((section) => (
-            <CollapsibleSection
-              key={section.id}
-              section={section}
-              onToggle={toggleCollapse}
-            >
-              <MarkdownRenderer
-                content={section.content}
-                isStreaming={!section.isComplete}
-              />
-            </CollapsibleSection>
-          ))}
+          {/* Render content items in order */}
+          {contentItems.map((item, index) => {
+            if (item.type === 'text') {
+              // Render plain text as markdown
+              return (
+                <View key={`text-${item.order}-${index}`} style={styles.rawContentContainer}>
+                  <MarkdownRenderer
+                    content={item.content}
+                    isStreaming={streamingState === 'streaming'}
+                  />
+                </View>
+              );
+            } else {
+              // Render section as collapsible
+              return (
+                <CollapsibleSection
+                  key={item.section.id}
+                  section={item.section}
+                  onToggle={toggleCollapse}
+                >
+                  <MarkdownRenderer
+                    content={item.section.content}
+                    isStreaming={!item.section.isComplete}
+                  />
+                </CollapsibleSection>
+              );
+            }
+          })}
 
-          {/* Streaming indicator when sections exist but still streaming */}
+          {/* Streaming indicator when content exists but still streaming */}
           {streamingState === 'streaming' && (
             <View style={styles.streamingIndicator}>
               <LoadingIndicator text="Loading more..." />

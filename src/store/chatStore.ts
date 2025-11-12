@@ -4,33 +4,32 @@
  */
 
 import { create } from 'zustand';
-import { Section, StreamingState } from '../types/chat.types';
+import { Section, StreamingState, ContentItem } from '../types/chat.types';
 
 interface ChatState {
   // State
   currentQuestion: string;
-  sections: Section[];
+  contentItems: ContentItem[]; // Ordered content items (text and sections)
   streamingState: StreamingState;
   error: string | null;
   rawContent: string; // Full accumulated streaming content
 
   // Actions
   setQuestion: (question: string) => void;
-  addSection: (section: Omit<Section, 'isCollapsed'>) => void;
-  updateSection: (id: string, updates: Partial<Section>) => void;
+  setContentItems: (items: ContentItem[]) => void;
   toggleCollapse: (id: string) => void;
   setStreamingState: (state: StreamingState) => void;
   setError: (error: string | null) => void;
   appendRawContent: (content: string) => void;
   setRawContent: (content: string) => void;
   reset: () => void;
-  clearSections: () => void;
+  clearContent: () => void;
 }
 
 // Initial state
 const initialState = {
   currentQuestion: '',
-  sections: [],
+  contentItems: [] as ContentItem[],
   streamingState: 'idle' as StreamingState,
   error: null,
   rawContent: '',
@@ -42,26 +41,24 @@ export const useChatStore = create<ChatState>((set) => ({
   // Set the current question
   setQuestion: (question) => set({ currentQuestion: question }),
 
-  // Add a new section (from parsed tag)
-  addSection: (section) =>
-    set((state) => ({
-      sections: [...state.sections, { ...section, isCollapsed: false }],
-    })),
-
-  // Update an existing section
-  updateSection: (id, updates) =>
-    set((state) => ({
-      sections: state.sections.map((s) =>
-        s.id === id ? { ...s, ...updates } : s
-      ),
-    })),
+  // Set ordered content items (replaces entire content)
+  setContentItems: (items) => set({ contentItems: items }),
 
   // Toggle collapse state of a section
   toggleCollapse: (id) =>
     set((state) => ({
-      sections: state.sections.map((s) =>
-        s.id === id ? { ...s, isCollapsed: !s.isCollapsed } : s
-      ),
+      contentItems: state.contentItems.map((item) => {
+        if (item.type === 'section' && item.section.id === id) {
+          return {
+            ...item,
+            section: {
+              ...item.section,
+              isCollapsed: !item.section.isCollapsed,
+            },
+          };
+        }
+        return item;
+      }),
     })),
 
   // Set streaming state
@@ -79,10 +76,10 @@ export const useChatStore = create<ChatState>((set) => ({
   // Set raw content directly (replace)
   setRawContent: (rawContent) => set({ rawContent }),
 
-  // Clear sections only (keep question)
-  clearSections: () =>
+  // Clear content (keep question)
+  clearContent: () =>
     set({
-      sections: [],
+      contentItems: [],
       rawContent: '',
       error: null,
     }),
@@ -95,8 +92,8 @@ export const useChatStore = create<ChatState>((set) => ({
 export const useStreamingState = () =>
   useChatStore((state) => state.streamingState);
 
-export const useSections = () =>
-  useChatStore((state) => state.sections);
+export const useContentItems = () =>
+  useChatStore((state) => state.contentItems);
 
 export const useCurrentQuestion = () =>
   useChatStore((state) => state.currentQuestion);

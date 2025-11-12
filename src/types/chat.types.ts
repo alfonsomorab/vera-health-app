@@ -12,6 +12,11 @@ export interface Section {
   isCollapsed: boolean;
 }
 
+// Content item - either plain text or a tagged section
+export type ContentItem =
+  | { type: 'text'; content: string; order: number }
+  | { type: 'section'; section: Section; order: number };
+
 // Streaming state
 export type StreamingState = 'idle' | 'streaming' | 'complete' | 'error';
 

@@ -39,6 +39,15 @@ export const CollapsibleSection = React.memo<CollapsibleSectionProps>(
         </Collapsible>
       </View>
     );
+  },
+  (prevProps, nextProps) => {
+    // Only re-render if section properties that affect display have changed
+    return (
+      prevProps.section.id === nextProps.section.id &&
+      prevProps.section.isCollapsed === nextProps.section.isCollapsed &&
+      prevProps.section.content === nextProps.section.content &&
+      prevProps.section.isComplete === nextProps.section.isComplete
+    );
   }
 );
 

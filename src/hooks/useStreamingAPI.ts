@@ -18,6 +18,7 @@ import {
   STREAM_TIMEOUT_MS,
 } from '../constants/config';
 import { SSEDataChunk, APIError } from '../types/api.types';
+import { StreamBuffer, createStreamBuffer } from '../utils/streamBuffer';
 
 interface UseStreamingAPIOptions {
   enabled: boolean;
@@ -33,12 +34,14 @@ export const useStreamingAPI = ({
   const currentQuestion = useChatStore((state) => state.currentQuestion);
   const setStreamingState = useChatStore((state) => state.setStreamingState);
   const appendRawContent = useChatStore((state) => state.appendRawContent);
+  const setContentItems = useChatStore((state) => state.setContentItems);
   const setError = useChatStore((state) => state.setError);
   const setRawContent = useChatStore((state) => state.setRawContent);
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const retryCountRef = useRef<number>(0);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const streamBufferRef = useRef<StreamBuffer | null>(null);
 
   /**
    * Handle incoming message chunks
@@ -49,11 +52,30 @@ export const useStreamingAPI = ({
       const content = chunk.content;
 
       if (content) {
-        // Append new content to raw content buffer
+        // Initialize stream buffer if needed
+        if (!streamBufferRef.current) {
+          streamBufferRef.current = createStreamBuffer();
+        }
+
+        // Append chunk to stream buffer
+        streamBufferRef.current.append(content);
+
+        // Also append to raw content for display
         appendRawContent(content);
 
-        // TODO: Phase 3 - Parse tags and create sections
-        // For now, just accumulate raw content
+        // Parse buffer and extract ordered content items
+        const parseResult = streamBufferRef.current.parseAndExtract();
+
+        // Update store with ordered content items
+        if (parseResult.contentItems.length > 0) {
+          console.log('Found', parseResult.contentItems.length, 'content items');
+          setContentItems(parseResult.contentItems);
+        }
+
+        // Log parsing info
+        if (parseResult.hasIncompleteTag) {
+          console.log('Buffer has incomplete tag, waiting for more data...');
+        }
       }
 
       // Reset timeout on each message
@@ -64,7 +86,35 @@ export const useStreamingAPI = ({
       }
 
       timeoutIdRef.current = setTimeout(() => {
-        console.log('Stream appears complete (no data for 5 seconds)');
+        console.log('🔵 ===== STREAM COMPLETED =====');
+
+        // Get raw content from store
+        const rawContent = useChatStore.getState().rawContent;
+        console.log('📊 Full raw content length:', rawContent.length);
+        console.log('📝 Full raw content:', rawContent);
+
+        // Flush any remaining content in buffer
+        if (streamBufferRef.current) {
+          const flushResult = streamBufferRef.current.flush();
+          console.log('🔧 Final flush - content items:', flushResult.contentItems.length);
+          console.log('🔧 Buffer has incomplete tag:', flushResult.hasIncompleteTag);
+
+          if (flushResult.hasIncompleteTag) {
+            console.warn('⚠️  Stream ended with incomplete tag');
+          }
+        }
+
+        // Log final state from store
+        const contentItems = useChatStore.getState().contentItems;
+        console.log('📦 Total content items:', contentItems.length);
+        contentItems.forEach((item, i) => {
+          if (item.type === 'text') {
+            console.log(`   Item ${i + 1}: [TEXT] - ${item.content.length} chars`);
+          } else {
+            console.log(`   Item ${i + 1}: [SECTION: ${item.section.tagName}] - ${item.section.content.length} chars`);
+          }
+        });
+        console.log('🔵 ===== END STREAM REPORT =====');
 
         // Clear timeout
         if (timeoutIdRef.current) {
@@ -87,7 +137,7 @@ export const useStreamingAPI = ({
         }
       }, 5000); // 5 seconds after last message = stream complete
     },
-    [appendRawContent, setStreamingState, onComplete]
+    [appendRawContent, setContentItems, setStreamingState, onComplete]
   );
 
   /**
@@ -181,6 +231,13 @@ export const useStreamingAPI = ({
 
     // Reset raw content
     setRawContent('');
+
+    // Reset stream buffer
+    if (streamBufferRef.current) {
+      streamBufferRef.current.clear();
+    } else {
+      streamBufferRef.current = createStreamBuffer();
+    }
 
     // Set streaming state
     setStreamingState('streaming');
