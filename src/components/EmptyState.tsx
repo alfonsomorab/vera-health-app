@@ -10,7 +10,7 @@ export const EmptyState: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.icon}>💬</Text>
+        <Text style={styles.icon}>💊</Text>
         <Text style={styles.title}>Welcome to Vera Health</Text>
         <Text style={styles.subtitle}>
           Ask a clinical question to get started
