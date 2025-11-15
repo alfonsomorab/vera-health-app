@@ -15,7 +15,6 @@ export const StreamingResponse: React.FC = () => {
   const currentQuestion = useCurrentQuestion();
   const contentItems = useContentItems();
   const error = useError();
-  const rawContent = useChatStore((state) => state.rawContent);
   const streamingState = useChatStore((state) => state.streamingState);
 
   // Get toggle function and wrap in useCallback for stable reference
@@ -30,10 +29,7 @@ export const StreamingResponse: React.FC = () => {
   }
 
   // Show loading only when streaming but no content yet
-  const showLoading = streamingState === 'streaming' && !rawContent && contentItems.length === 0;
-
-  // Show raw content only if we haven't parsed any content items yet (Phase 2 fallback)
-  const showRawContent = rawContent && contentItems.length === 0;
+  const showLoading = streamingState === 'streaming' && contentItems.length === 0;
 
   return (
     <ScrollView
@@ -58,26 +54,7 @@ export const StreamingResponse: React.FC = () => {
         </View>
       )}
 
-      {/* Raw Content Display (Phase 2 - before tag parsing) */}
-      {showRawContent && (
-        <View style={styles.answerContainer}>
-          <Text style={styles.answerLabel}>Answer:</Text>
-          <View style={styles.rawContentContainer}>
-            <MarkdownRenderer
-              content={rawContent}
-              isStreaming={streamingState === 'streaming'}
-            />
-          </View>
-          {/* Streaming indicator */}
-          {streamingState === 'streaming' && (
-            <View style={styles.streamingIndicator}>
-              <LoadingIndicator text="Streaming..." />
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Ordered Content Items (Phase 3+) */}
+      {/* Ordered Content Items */}
       {contentItems.length > 0 && (
         <View style={styles.answerContainer}>
           <Text style={styles.answerLabel}>Answer:</Text>
