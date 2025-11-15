@@ -6,7 +6,7 @@ A React Native mobile application that provides real-time AI-powered medical gui
 
 This mobile app allows healthcare professionals to ask clinical questions and receive AI-generated responses in real-time via Server-Sent Events (SSE). The responses include structured content with collapsible sections for guidelines, drug information, and recommendations, all rendered in markdown format.
 
-## Demo app
+## 👀 Demo app
 
 - Main screen
 
