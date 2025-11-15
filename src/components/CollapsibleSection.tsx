@@ -27,15 +27,16 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const isCollapsed = section.isCollapsed ?? true;
 
   // Fade-in animation for new sections
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  // Start at 0.7 so text is always readable during animation
+  const fadeAnim = useRef(new Animated.Value(0.7)).current;
+  const scaleAnim = useRef(new Animated.Value(0.97)).current;
 
   // Animate in when component mounts
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 400,
+        duration: 300,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {

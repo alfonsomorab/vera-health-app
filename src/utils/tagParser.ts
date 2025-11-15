@@ -189,14 +189,29 @@ export const parseIntoOrderedContent = (
 
   // Add remaining text after last tag (if any)
   if (lastIndex < buffer.length) {
-    const textAfter = buffer.substring(lastIndex).trim();
-    if (textAfter && !incompleteTag) {
-      // Only add if it's not an incomplete tag
-      contentItems.push({
-        type: 'text',
-        content: textAfter,
-        order: lastIndex,
-      });
+    if (incompleteTag) {
+      // If there's an incomplete tag, only add text BEFORE it
+      if (incompleteTag.startIndex > lastIndex) {
+        const textBefore = buffer.substring(lastIndex, incompleteTag.startIndex).trim();
+        if (textBefore) {
+          contentItems.push({
+            type: 'text',
+            content: textBefore,
+            order: lastIndex,
+          });
+        }
+      }
+      // Don't show the incomplete tag content
+    } else {
+      // No incomplete tag, show all remaining text
+      const textAfter = buffer.substring(lastIndex).trim();
+      if (textAfter) {
+        contentItems.push({
+          type: 'text',
+          content: textAfter,
+          order: lastIndex,
+        });
+      }
     }
   }
 
