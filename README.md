@@ -10,7 +10,7 @@ This mobile app allows healthcare professionals to ask clinical questions and re
 
 - Main screen
 
-<img width="240px" height="400" src="https://github.com/alfonsomorab/vera-health-app/blob/main/docs/IMG_2363.GIF?raw=true" />
+<img width="240px" src="https://github.com/alfonsomorab/vera-health-app/blob/main/docs/IMG_2363.GIF?raw=true" />
 
 
 ## ✨ Features
