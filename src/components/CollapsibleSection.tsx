@@ -1,10 +1,11 @@
 /**
  * CollapsibleSection Component
  * Displays a collapsible section with header and content
+ * Enhanced with fade-in animation and smooth expand/collapse
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import { Section } from '../types/chat.types';
 import { getTagTitle } from '../constants/config';
@@ -25,12 +26,41 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   // Ensure isCollapsed is always a boolean (defaults to true = collapsed)
   const isCollapsed = section.isCollapsed ?? true;
 
+  // Fade-in animation for new sections
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  // Animate in when component mounts
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, scaleAnim]);
+
   const handleToggle = React.useCallback(() => {
     onToggle(section.id);
   }, [onToggle, section.id]);
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
       <TouchableOpacity
         style={styles.header}
         onPress={handleToggle}
@@ -42,12 +72,16 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         </Text>
       </TouchableOpacity>
 
-      <Collapsible collapsed={isCollapsed} duration={300}>
+      <Collapsible
+        collapsed={isCollapsed}
+        duration={300}
+        easing="easeInOutCubic"
+      >
         <View style={styles.content}>
           {children}
         </View>
       </Collapsible>
-    </View>
+    </Animated.View>
   );
 };
 

@@ -1,10 +1,11 @@
 /**
  * LoadingIndicator Component
  * Displays "Thinking..." state while waiting for streaming to start
+ * Enhanced with staggered dot animations
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 
 interface LoadingIndicatorProps {
   text?: string;
@@ -13,39 +14,74 @@ interface LoadingIndicatorProps {
 export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   text = 'Thinking...',
 }) => {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const dot1Opacity = useRef(new Animated.Value(0.3)).current;
+  const dot2Opacity = useRef(new Animated.Value(0.3)).current;
+  const dot3Opacity = useRef(new Animated.Value(0.3)).current;
+  const textOpacity = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
-    const animation = Animated.loop(
+    // Create staggered dot animations
+    const createDotAnimation = (dotValue: Animated.Value, delay: number) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dotValue, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(dotValue, {
+            toValue: 0.3,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    };
+
+    // Text pulse animation
+    const textAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, {
+        Animated.timing(textOpacity, {
           toValue: 1,
-          duration: 800,
+          duration: 1200,
           useNativeDriver: true,
         }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 800,
+        Animated.timing(textOpacity, {
+          toValue: 0.6,
+          duration: 1200,
           useNativeDriver: true,
         }),
       ])
     );
 
-    animation.start();
+    // Start all animations with staggered delays
+    const animations = [
+      createDotAnimation(dot1Opacity, 0),
+      createDotAnimation(dot2Opacity, 200),
+      createDotAnimation(dot3Opacity, 400),
+      textAnimation,
+    ];
 
-    return () => animation.stop();
-  }, [opacity]);
+    animations.forEach((anim) => anim.start());
+
+    return () => {
+      animations.forEach((anim) => anim.stop());
+    };
+  }, [dot1Opacity, dot2Opacity, dot3Opacity, textOpacity]);
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { opacity }]}>
+      <View style={styles.content}>
         <View style={styles.dotsContainer}>
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
+          <Animated.View style={[styles.dot, { opacity: dot1Opacity }]} />
+          <Animated.View style={[styles.dot, { opacity: dot2Opacity }]} />
+          <Animated.View style={[styles.dot, { opacity: dot3Opacity }]} />
         </View>
-        <Text style={styles.text}>{text}</Text>
-      </Animated.View>
+        <Animated.Text style={[styles.text, { opacity: textOpacity }]}>
+          {text}
+        </Animated.Text>
+      </View>
     </View>
   );
 };
