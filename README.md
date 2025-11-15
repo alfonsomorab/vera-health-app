@@ -6,6 +6,13 @@ A React Native mobile application that provides real-time AI-powered medical gui
 
 This mobile app allows healthcare professionals to ask clinical questions and receive AI-generated responses in real-time via Server-Sent Events (SSE). The responses include structured content with collapsible sections for guidelines, drug information, and recommendations, all rendered in markdown format.
 
+## Demo app
+
+- Main screen
+
+<img width="240px" height="400" src="https://github.com/alfonsomorab/vera-health-app/blob/main/docs/IMG_2363.GIF?raw=true" />
+
+
 ## ✨ Features
 
 - **Real-time Streaming**: Server-Sent Events (SSE) for live AI response streaming
