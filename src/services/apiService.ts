@@ -4,7 +4,7 @@
  */
 
 import EventSource from 'react-native-sse';
-import { API_BASE_URL, API_STREAM_ENDPOINT, STREAM_TIMEOUT_MS } from '../constants/config';
+import { API_BASE_URL, API_STREAM_ENDPOINT } from '../constants/config';
 import { SSEDataChunk, APIError } from '../types/api.types';
 
 /**
@@ -24,8 +24,6 @@ export const createEventSource = (
   onError: (error: APIError) => void,
   onComplete: () => void
 ): EventSource => {
-  console.log('Creating EventSource for:', url);
-
   const eventSource = new EventSource(url, {
     // Don't set timeoutBeforeConnection - let the connection stay open
     // We'll handle timeouts manually in the hook
@@ -33,22 +31,14 @@ export const createEventSource = (
 
   // Handle incoming messages
   eventSource.addEventListener('message', (event) => {
-    console.log('Received SSE message');
     try {
       if (event.data) {
         const parsed = JSON.parse(event.data);
-        console.log('Parsed message type:', parsed.type);
 
         // Handle STREAM type messages (actual content)
         // Format: {"type":"STREAM","content":"text chunk"}
         if (parsed.type === 'STREAM' && typeof parsed.content === 'string') {
-          console.log('Received STREAM chunk, length:', parsed.content.length);
           onMessage(parsed as SSEDataChunk);
-        }
-
-        // Ignore other event types (NodeChunk, etc.) - these are metadata
-        if (parsed.type !== 'STREAM') {
-          console.log('Ignoring non-STREAM event:', parsed.type);
         }
       }
     } catch (error) {
@@ -74,12 +64,11 @@ export const createEventSource = (
 
   // Handle connection open
   eventSource.addEventListener('open', () => {
-    console.log('✅ SSE connection opened successfully');
+    // Connection opened successfully
   });
 
   // Handle connection close
   eventSource.addEventListener('close', () => {
-    console.log('🔴 SSE connection closed');
     onComplete();
   });
 
@@ -93,7 +82,6 @@ export const closeEventSource = (eventSource: EventSource | null): void => {
   if (eventSource) {
     try {
       eventSource.close();
-      console.log('EventSource closed successfully');
     } catch (error) {
       console.error('Error closing EventSource:', error);
     }

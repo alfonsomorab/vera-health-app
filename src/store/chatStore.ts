@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { Section, StreamingState, ContentItem } from '../types/chat.types';
+import { StreamingState, ContentItem } from '../types/chat.types';
 
 interface ChatState {
   // State

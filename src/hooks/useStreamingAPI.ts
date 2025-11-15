@@ -68,13 +68,7 @@ export const useStreamingAPI = ({
 
         // Update store with ordered content items
         if (parseResult.contentItems.length > 0) {
-          console.log('Found', parseResult.contentItems.length, 'content items');
           setContentItems(parseResult.contentItems);
-        }
-
-        // Log parsing info
-        if (parseResult.hasIncompleteTag) {
-          console.log('Buffer has incomplete tag, waiting for more data...');
         }
       }
 
@@ -86,35 +80,14 @@ export const useStreamingAPI = ({
       }
 
       timeoutIdRef.current = setTimeout(() => {
-        console.log('🔵 ===== STREAM COMPLETED =====');
-
-        // Get raw content from store
-        const rawContent = useChatStore.getState().rawContent;
-        console.log('📊 Full raw content length:', rawContent.length);
-        console.log('📝 Full raw content:', rawContent);
-
         // Flush any remaining content in buffer
         if (streamBufferRef.current) {
           const flushResult = streamBufferRef.current.flush();
-          console.log('🔧 Final flush - content items:', flushResult.contentItems.length);
-          console.log('🔧 Buffer has incomplete tag:', flushResult.hasIncompleteTag);
 
           if (flushResult.hasIncompleteTag) {
-            console.warn('⚠️  Stream ended with incomplete tag');
+            console.warn('Stream ended with incomplete tag');
           }
         }
-
-        // Log final state from store
-        const contentItems = useChatStore.getState().contentItems;
-        console.log('📦 Total content items:', contentItems.length);
-        contentItems.forEach((item, i) => {
-          if (item.type === 'text') {
-            console.log(`   Item ${i + 1}: [TEXT] - ${item.content.length} chars`);
-          } else {
-            console.log(`   Item ${i + 1}: [SECTION: ${item.section.tagName}] - ${item.section.content.length} chars`);
-          }
-        });
-        console.log('🔵 ===== END STREAM REPORT =====');
 
         // Clear timeout
         if (timeoutIdRef.current) {
@@ -162,10 +135,6 @@ export const useStreamingAPI = ({
         retryCountRef.current += 1;
         const delay = RETRY_DELAY_MS * retryCountRef.current;
 
-        console.log(
-          `Retrying connection (${retryCountRef.current}/${MAX_RETRY_ATTEMPTS}) in ${delay}ms...`
-        );
-
         setTimeout(() => {
           if (enabled && currentQuestion) {
             startStreaming();
@@ -184,15 +153,15 @@ export const useStreamingAPI = ({
         retryCountRef.current = 0;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [enabled, currentQuestion, setError, setStreamingState, onError]
+    // startStreaming is omitted to avoid circular dependency - it's defined after this callback
   );
 
   /**
    * Handle stream completion
    */
   const handleComplete = useCallback(() => {
-    console.log('Stream completed successfully');
-
     // Clear timeout
     if (timeoutIdRef.current) {
       clearTimeout(timeoutIdRef.current);
@@ -244,7 +213,6 @@ export const useStreamingAPI = ({
 
     // Build URL
     const url = buildStreamURL(currentQuestion);
-    console.log('Starting stream:', url);
 
     try {
       // Create new EventSource

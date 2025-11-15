@@ -143,19 +143,19 @@ export const extractTextOutsideTags = (text: string): string => {
  */
 export const parseIntoOrderedContent = (
   buffer: string
-): { contentItems: Array<{ type: 'text' | 'section'; content: string; tagName?: string; order: number }>; hasIncompleteTag: boolean } => {
+): { contentItems: { type: 'text' | 'section'; content: string; tagName?: string; order: number }[]; hasIncompleteTag: boolean } => {
   // Extract complete tags with their positions
   const completeTags = extractCompleteTags(buffer);
 
   // Check for incomplete tag at end
   const incompleteTag = detectIncompleteTag(buffer);
 
-  const contentItems: Array<{
+  const contentItems: {
     type: 'text' | 'section';
     content: string;
     tagName?: string;
     order: number;
-  }> = [];
+  }[] = [];
 
   let lastIndex = 0;
 
