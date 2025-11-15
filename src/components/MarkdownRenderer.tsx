@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { StyleSheet, Platform, Text } from 'react-native';
+import { StyleSheet, Platform, Text, Linking } from 'react-native';
 import Markdown, { RenderRules, MarkdownIt } from 'react-native-markdown-display';
 import MarkdownItTable from 'markdown-it-multimd-table';
 
@@ -14,6 +14,67 @@ interface MarkdownRendererProps {
   isStreaming?: boolean;
 }
 
+// Helper to open external links
+const openLink = async (url: string) => {
+  try {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    }
+  } catch (error) {
+    console.error('Error opening link:', error);
+  }
+};
+
+// Parse citation and return clickable inline component
+const renderCitation = (citation: string, index: number) => {
+  // DOI citation: [doi: 10.xxxx...]
+  const doiMatch = citation.match(/\[doi:\s*(10\.[^\]]+)\]/i);
+  if (doiMatch) {
+    const doi = doiMatch[1].trim();
+    const url = `https://doi.org/${doi}`;
+    return (
+      <Text
+        key={`citation-${index}`}
+        style={citationStyles.link}
+        onPress={() => openLink(url)}
+      >
+        {' '}📄DOI{' '}
+      </Text>
+    );
+  }
+
+  // PMID citation: [PMID: 12345...]
+  const pmidMatch = citation.match(/\[PMID:\s*(\d+)\]/i);
+  if (pmidMatch) {
+    const pmid = pmidMatch[1];
+    const url = `https://pubmed.ncbi.nlm.nih.gov/${pmid}`;
+    return (
+      <Text
+        key={`citation-${index}`}
+        style={citationStyles.link}
+        onPress={() => openLink(url)}
+      >
+        {' '}📚PubMed{' '}
+      </Text>
+    );
+  }
+
+  // Level evidence: [Level I evidence] - hide completely
+  const levelMatch = citation.match(/\[Level ([IVX]+) evidence\]/i);
+  if (levelMatch) {
+    // Return null to hide the label completely
+    return null;
+  }
+
+  // Fallback: show original citation
+  return (
+    <Text key={`citation-${index}`} style={citationStyles.fallback}>
+      {citation}
+    </Text>
+  );
+};
+
 // Custom render rules for special elements
 const customRules: RenderRules = {
   // Custom rendering for text to handle citations
@@ -21,22 +82,34 @@ const customRules: RenderRules = {
     const text = node.content;
 
     // Match citation patterns like [doi: ...] or [Level I evidence]
-    const citationPattern = /(\[(?:doi:|Level [IVX]+ evidence|PMID:)[^\]]+\])/g;
+    const citationPattern = /\[(?:doi:|Level [IVX]+ evidence|PMID:)[^\]]+\]/gi;
 
     if (citationPattern.test(text)) {
-      // Split text by citations and render with special styling
+      // Split text by citations and render with clickable components
       const parts = text.split(citationPattern);
+      const citations = text.match(citationPattern) || [];
+
+      let citationIndex = 0;
       return (
         <Text key={node.key} style={styles.text}>
           {parts.map((part, index) => {
-            if (part.match(citationPattern)) {
-              return (
-                <Text key={`citation-${index}`} style={styles.citation}>
-                  {part}
-                </Text>
-              );
-            }
-            return <Text key={`text-${index}`}>{part}</Text>;
+            // Render text part
+            const textElement = part ? (
+              <Text key={`text-${index}`}>{part}</Text>
+            ) : null;
+
+            // Render citation after this text part (if one exists)
+            const citationElement =
+              citationIndex < citations.length
+                ? renderCitation(citations[citationIndex++], index)
+                : null;
+
+            return (
+              <React.Fragment key={`frag-${index}`}>
+                {textElement}
+                {citationElement}
+              </React.Fragment>
+            );
           })}
         </Text>
       );
@@ -49,6 +122,28 @@ const customRules: RenderRules = {
     );
   },
 };
+
+// Citation-specific styles
+const citationStyles = StyleSheet.create({
+  link: {
+    fontSize: 12,
+    color: '#1976d2',
+    fontWeight: '600',
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  fallback: {
+    fontSize: 13,
+    color: '#5d6d7e',
+    fontStyle: 'italic',
+    backgroundColor: '#ecf0f1',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 3,
+  },
+});
 
 // Configure markdown-it instance with table support
 const markdownItInstance = MarkdownIt({ typographer: true, linkify: true }).use(
