@@ -26,11 +26,8 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const isCollapsed = section.isCollapsed ?? true;
 
   const handleToggle = React.useCallback(() => {
-    console.log('Toggle clicked for section:', section.id, 'isCollapsed before:', isCollapsed);
     onToggle(section.id);
-  }, [onToggle, section.id, isCollapsed]);
-
-  console.log('CollapsibleSection render:', section.id, 'isCollapsed:', isCollapsed);
+  }, [onToggle, section.id]);
 
   return (
     <View style={styles.container}>

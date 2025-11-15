@@ -8,3 +8,4 @@ export { LoadingIndicator } from './LoadingIndicator';
 export { CollapsibleSection } from './CollapsibleSection';
 export { MarkdownRenderer } from './MarkdownRenderer';
 export { StreamingResponse } from './StreamingResponse';
+export { EmptyState } from './EmptyState';

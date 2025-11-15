@@ -9,6 +9,7 @@ import { useChatStore, useContentItems, useCurrentQuestion, useError } from '../
 import { LoadingIndicator } from './LoadingIndicator';
 import { CollapsibleSection } from './CollapsibleSection';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { EmptyState } from './EmptyState';
 
 export const StreamingResponse: React.FC = () => {
   const currentQuestion = useCurrentQuestion();
@@ -23,9 +24,9 @@ export const StreamingResponse: React.FC = () => {
     toggleCollapseFromStore(id);
   }, [toggleCollapseFromStore]);
 
-  // Don't show anything if no question has been asked
+  // Show empty state if no question has been asked
   if (!currentQuestion) {
-    return null;
+    return <EmptyState />;
   }
 
   // Show loading only when streaming but no content yet
@@ -35,7 +36,12 @@ export const StreamingResponse: React.FC = () => {
   const showRawContent = rawContent && contentItems.length === 0;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       {/* User Question */}
       <View style={styles.questionContainer}>
         <Text style={styles.questionLabel}>Question:</Text>

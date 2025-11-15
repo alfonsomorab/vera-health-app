@@ -25,7 +25,6 @@ export const ChatScreen: React.FC = () => {
 
   // Handle streaming completion
   const handleStreamComplete = useCallback(() => {
-    console.log('Streaming completed');
     setStreamingEnabled(false);
   }, []);
 
@@ -52,8 +51,6 @@ export const ChatScreen: React.FC = () => {
 
     // Enable streaming to trigger the API call
     setStreamingEnabled(true);
-
-    console.log('Question submitted:', question);
   };
 
   return (

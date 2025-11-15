@@ -10,8 +10,6 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useIsStreaming } from '../store/chatStore';
 
@@ -38,10 +36,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const isDisabled = isStreaming || !inputText.trim();
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -67,7 +62,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
